@@ -13,20 +13,19 @@ var GameNode = function (depth, grid, mode, direction) {
 
 
     this.setAlphaValue =  function(value){
-      this.alphaValue = this.alphaValue > value ? value : this.alphaValue;
+      this.alphaValue = this.alphaValue < value ? value : this.alphaValue;
     };
 
     this.setBetaValue = function(value){
-      this.betaValue = this.betaValue < value ? value : this.betaValue;
+      this.betaValue = this.betaValue > value ? value : this.betaValue;
     };
 
-    this.setNodeValue = function(value, direction){
+    this.setNodeValue = function(value){
         if((this.mode == 'max' && value > this.value) || (this.mode == 'min' && value < this.value)){
             this.value = value;
-            this.direction = direction;
         }
-    }
+    };
 
-
+  
 
 };

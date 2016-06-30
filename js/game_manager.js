@@ -3,13 +3,13 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
     this.inputManager = new InputManager;
     this.storageManager = new StorageManager;
     this.actuator = new Actuator;
+    cellShifter = new GridCellShifter();
 
     this.startTiles = 2;
 
     this.inputManager.on("move", this.move.bind(this));
     this.inputManager.on("restart", this.restart.bind(this));
     this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
-    this.playerAI = new PlayerAI();
     this.setup();
 }
 
@@ -62,13 +62,19 @@ GameManager.prototype.setup = function () {
 
 
 GameManager.prototype.startAITurn = function () {
-    console.log(this.playerAI);
-    this.playerAI.setStartingDepth(0);
-    this.playerAI.setEndingDepth(0);
-    this.playerAI.setCurrentGrid(this.grid);
-    var direction = this.playerAI.getAIPlayerDirection();
+    //console.log(this.playerAI);
+    console.log("Before");
+    console.log(this.grid.showCells());
+    //this.sleep(2000);
+    var playerAI = new PlayerAI();
+    playerAI.setStartingDepth(0);
+    playerAI.setEndingDepth(0);
+    playerAI.setCurrentGrid(_.cloneDeep(this.grid));
+    var direction = playerAI.getAIPlayerDirection();
     console.log(direction);
-    this.move(direction);
+    if(direction != null){
+        this.move(direction);
+    }
 };
 
 // Set up the initial tiles to start the game with
@@ -145,6 +151,8 @@ GameManager.prototype.moveTile = function (tile, cell) {
 // Move tiles on the grid in the specified direction
 GameManager.prototype.move = function (direction) {
     // 0: up, 1: right, 2: down, 3: left
+    //console.log("Direction: " + direction);
+    console.log("GUI MOVE");
     var self = this;
 
     if (this.isGameTerminated()) return; // Don't do anything if the game's over
@@ -201,21 +209,27 @@ GameManager.prototype.move = function (direction) {
         if (!this.movesAvailable()) {
             this.over = true; // Game over!
         }
-        /*this.actuate();
-        console.log("After move");
-        console.log(this.grid.showCells());*/
-        this.startAITurn();
+        this.actuate();
+        /*console.log("After move");
+        console.log(this.grid.showCells())*/
+        //this.sleep(5000);
+        this.setup();
     }
+    /*console.log("After move");
+    console.log(this.grid.showCells());
+    this.sleep(1000);
+    console.log("after sleep");
+    this.startAITurn();*/
 };
 
 // Get the vector representing the chosen direction
 GameManager.prototype.getVector = function (direction) {
     // Vectors representing tile movement
     var map = {
-        0: {x: 0, y: -1}, // Up
-        1: {x: 1, y: 0},  // Right
-        2: {x: 0, y: 1},  // Down
-        3: {x: -1, y: 0}   // Left
+        0: {x: 0, y: -1}, // left
+        1: {x: 1, y: 0},  // down
+        2: {x: 0, y: 1},  // right
+        3: {x: -1, y: 0}   // up
     };
 
     return map[direction];
@@ -287,4 +301,13 @@ GameManager.prototype.tileMatchesAvailable = function () {
 
 GameManager.prototype.positionsEqual = function (first, second) {
     return first.x === second.x && first.y === second.y;
+};
+
+GameManager.prototype.sleep = function(milliseconds){
+  var start = new Date().getTime();
+  for (var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > milliseconds){
+      break;
+    }
+  }
 };

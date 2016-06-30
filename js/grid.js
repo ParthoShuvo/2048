@@ -4,18 +4,7 @@ function Grid(size, previousState) {
 }
 
 
-Grid.prototype.clone = function () {
-    var cloneGrid = new Grid();
-    cloneGrid.size = this.size;
-    cloneGrid.cells = [];
-    for (var i = 0; i < cloneGrid.size; i++) {
-        cloneGrid.cells[i] = [];
-        for (var j = 0; j < cloneGrid.size; j++) {
-            cloneGrid.cells[i].push(this.cells[i][j]);
-        }
-    }
-    return cloneGrid;
-};
+
 
 // Build a grid of the specified size
 Grid.prototype.empty = function () {
@@ -99,7 +88,12 @@ Grid.prototype.cellContent = function (cell) {
 
 Grid.prototype.showCells = function () {
     for (var i = 0; i < this.size; i++) {
-        console.log(this.cells[i]);
+        var elements = '';
+        for(var j = 0; j < this.size; j++){
+          elements += this.cells[i][j] != null ? this.cells[i][j].value : 0;
+          elements += " ";
+        }
+        console.log(elements);
     }
 };
 
@@ -194,146 +188,17 @@ Grid.prototype.findFarthestPosition = function (cell, vector) {
     };
 };
 
-Grid.prototype.currentChangeMatrix = [];
-for (var x = 0; x < 4; x++) {
-    Grid.prototype.currentChangeMatrix.push([]);
-    for (var y = 0; y < 4; y++) {
-        Grid.prototype.currentChangeMatrix[x].push(0);
+
+Grid.prototype.isWin = function() {
+  var self = this;
+  for (var i=0; i<4; i++) {
+    for (var j=0; j<4; j++) {
+      if (this.cells[i][j] != null) {
+        if (this.cells[i][j].value == 2048) {
+          return true;
+        }
+      }
     }
+  }
+  return false;
 }
-
-Grid.prototype.moveUp = function () {
-    var moved = false;
-    var score = 0;
-    var won = 0;
-    for (var col = 0; col < this.size; col++) {
-        for (var row = 1; row < this.size; row++) {
-            var k = row;
-            while (k > 0) {
-                if (!this.currentChangeMatrix[k - 1][col] && this.cells[k][col] != null &&
-                    this.cells[k - 1][col] != null &&
-                    this.cellContent(this.cells[k][col]) == this.cellContent(this.cells[k - 1][col])) {
-                    this.cells[k - 1][col].value += this.cells[k][col].value;
-                    score += this.cells[k - 1][col].value;
-                    won = this.cells[k - 1][col].value >= 2048 ? true : false;
-                    this.cells[k][col] = null;
-                    this.currentChangeMatrix[k - 1][col] = 1;
-                    moved = true;
-                    break;
-                }
-                else if (this.cells[k][col] != null && this.cells[k - 1][col] == null) {
-                    this.cells[k - 1][col] = new Tile({x: k - 1, y: col}, this.cells[k][col].value);
-                    this.cells[k][col] = null;
-                    moved = true;
-                    k--;
-                }
-                else {
-                    break;
-                }
-            }
-        }
-    }
-    return {moved: moved, score: score, won: won};
-};
-
-Grid.prototype.moveDown = function () {
-    var moved = false;
-    var score = 0;
-    var won = 0;
-    for (var col = 0; col < this.size; col++) {
-        for (var row = this.size - 2; row >= 0; row--) {
-            var k = row;
-            while (k < this.size - 1) {
-                if (!this.currentChangeMatrix[k + 1][col] && this.cells[k][col] != null &&
-                    this.cells[k + 1][col] != null &&
-                    this.cellContent(this.cells[k][col]) == this.cellContent(this.cells[k + 1][col])) {
-                    this.cells[k + 1][col].value += this.cells[k][col].value;
-                    score += this.cells[k + 1][col].value;
-                    won = this.cells[k + 1][col].value >= 2048 ? true : false;
-                    this.cells[k][col] = null;
-                    this.currentChangeMatrix[k + 1][col] = 1;
-                    moved = true;
-                    break;
-                }
-                else if (this.cells[k][col] != null && this.cells[k + 1][col] == null) {
-                    this.cells[k + 1][col] = new Tile({x: k + 1, y: col}, this.cells[k][col].value);
-                    this.cells[k][col] = null;
-                    moved = true;
-                    k++;
-                }
-                else {
-                    break;
-                }
-            }
-        }
-    }
-    return {moved: moved, score: score, won: won};
-};
-
-Grid.prototype.moveLeft = function () {
-    var moved = false;
-    var score = 0;
-    var won = 0;
-    for (var row = 0; row < this.size; row++) {
-        for (var col = 1; col < this.size; col++) {
-            var k = col;
-            while (k > 0) {
-                if (!this.currentChangeMatrix[row][k - 1] && this.cells[row][k] != null &&
-                    this.cells[row][k - 1] != null &&
-                    this.cellContent(this.cells[row][k]) == this.cellContent(this.cells[row][k - 1])) {
-                    this.cells[row][k - 1].value += this.cells[row][k].value;
-                    score += this.cells[row][k - 1].value;
-                    won = this.cells[row][k - 1].value >= 2048 ? true : false;
-                    this.cells[row][k] = null;
-                    this.currentChangeMatrix[row][k - 1] = 1;
-                    moved = true;
-                    break;
-                }
-                else if (this.cells[row][k] != null && this.cells[row][k - 1] == null) {
-                    this.cells[row][k - 1] = new Tile({x: row, y: k - 1}, this.cells[row][k].value);
-                    this.cells[row][k] = null;
-                    moved = true;
-                    k--;
-                }
-                else {
-                    break;
-                }
-            }
-        }
-    }
-    return {moved: moved, score: score, won: won};
-};
-
-Grid.prototype.moveRight = function () {
-    var moved = false;
-    var score = 0;
-    var won = 0;
-    for (var row = 0; row < this.size; row++) {
-        for (var col = this.size - 2; col >= 0; col--) {
-            var k = col;
-            while (k < this.size - 1) {
-                if (!this.currentChangeMatrix[row][k + 1] && this.cells[row][k] != null &&
-                    this.cells[row][k + 1] != null &&
-                    this.cellContent(this.cells[row][k]) == this.cellContent(this.cells[row][k + 1])) {
-                    this.cells[row][k + 1].value += this.cells[row][k].value;
-                    score += this.cells[row][k + 1].value;
-                    won = this.cells[row][k + 1].value >= 2048 ? true : false;
-                    this.cells[row][k] = null;
-                    this.currentChangeMatrix[row][k + 1] = 1;
-                    moved = true;
-                    break;
-                }
-                else if (this.cells[row][k] != null && this.cells[row][k + 1] == null) {
-                    this.cells[row][k + 1] = new Tile({x: row, y: k + 1}, this.cells[row][k].value);
-                    this.cells[row][k] = null;
-                    moved = true;
-                    k++;
-                }
-                else {
-                    break;
-                }
-            }
-        }
-    }
-    return {moved: moved, score: score, won: won};
-};
