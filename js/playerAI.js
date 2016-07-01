@@ -7,6 +7,7 @@ var PlayerAI = function () {
     var cellShifter = new GridCellShifter();
     var currentChildNodes =  null;
     var flag = true;
+    var maxTile = null;
 
     /**
      * heuristic value weight
@@ -32,7 +33,7 @@ var PlayerAI = function () {
     };
 
 
-    /**
+    /**ar newMaxTile = new GridScorer(newGameNode.grid.cells).getGridMaxTile();
      * set CurrentGrid
      * @param grid
      */
@@ -41,19 +42,31 @@ var PlayerAI = function () {
         this.currentNode = new GameNode(this.initialDepth, grid, 'max', null);
     };
 
+    function removeNodeElement(){
+      if(maxTile.x == 3 && maxTile.y == 3 && currentChildNodes[0].direction == 0){
+        //var newMaxTile = new GridScorer(currentChildNodes[0].grid.cells).getGridMaxTile();
+        if(currentChildNodes[0].grid.cells[3][3] == null){
+          currentChildNodes.shift();
+        }
+      }
+    }
+
     /***
      * get AI player direction
      * @returns {number}
      */
     this.getAIPlayerDirection = function () {
+        maxTile = new GridScorer(this.currentNode.grid.cells).getGridMaxTile();
         //getChildNodes(this.currentNode, 'max');
         //console.log(getHeuristicValue(this.currentNode.grid));
         alphaBetaPruning(this.currentNode, 'max');
         var direction = null;
+        //console.log(this.currentNode);
         console.log("Best Value: " + this.currentNode.value);
         //console.log(this.currentNode.grid.showCells());
         for(var i = 0; i < currentChildNodes.length; i++){
-              /*console.log(currentChildNodes[i].grid.showCells());
+          /*console.log(currentChildNodes[i]);
+              console.log(currentChildNodes[i].grid.showCells());
               console.log("Direction: " + currentChildNodes[i].direction + " value: " +currentChildNodes[i].value);*/
             if(currentChildNodes[i].value == this.currentNode.value){
                 direction =  currentChildNodes[i].direction;
@@ -81,11 +94,14 @@ var PlayerAI = function () {
           rightMostCornerMaxValue = Math.log(gridMaxCell.value + grid.cells[3][2] + grid.cells[3][1] + grid.cells[3][0]);
         }
         var heuristicVal = maxWeight * gridMaxCell.value +
-              emptyWeight * countOfEmptyCells + monotonicityWeight * monotonicity +
+              emptyWeight * countOfEmptyCells + monotonicityWeight * monotonicity2 +
               smoothWeight * smoothness;
         return heuristicVal;
 
     }
+
+
+
 
     function clone(currentGrid) {
         //console.log(currentGrid.showCells());
@@ -135,6 +151,7 @@ var PlayerAI = function () {
         //console.log("Parent");
         //console.log(parentNode.grid.showCells());
         //console.log("max");
+        //var currentMaxTile = new GridScorer(parentNode.grid.cells).getGridMaxTile();
         for (var direction = 0; direction < 3; direction++) {
             var newGrid = _.cloneDeep(parentNode.grid);
             var res = null;
@@ -155,22 +172,49 @@ var PlayerAI = function () {
                 default:
                     break;
             }
+            //console.log(currentMaxTile.x  + " " + currentMaxTile.y)
+            /*if(direction == 0 && currentMaxTile.x == 3 && currentMaxTile.y == 3
+                      && ){
+              console.log("checked...................................");
+              var bal = newGrid.cells[3][3] != null ? newGrid.cells[3][3].value : 0;
+              console.log(bal + " " + parentNode.grid.cells[3][3].value);
+              continue;
+            }*/
             if (res != null && res.moved) {
                 //console.log("child node");
                 //console.log(direction);
                 //console.log(newGrid.showCells());
-                childNodes.push(new GameNode(parentNode.depth + 1, newGrid, 'min', direction));
+                var newGameNode = new GameNode(parentNode.depth + 1, newGrid, 'min', direction);
+                var newMaxTile = new GridScorer(newGameNode.grid.cells).getGridMaxTile();
+                if(direction == 0 &&  (maxTile.x == 3 && maxTile.y == 3) &&
+                      (newMaxTile.x != 3 || newMaxTile.y != 3) && (parentNode.depth + 1) == 1){
+                        newGameNode.badMove = true;
+                        newGameNode.bonusValue = -1000;
+                        //continue;
+                }
+                /*else if(newMaxTile.x == 3 && newMaxTile.y == 3){
+                          newGameNode.bestMove = true;
+                          newGameNode.bonusValue = 100;
+                          //console.log(newGameNode.grid.showCells());
+                          //console.log("check");
+                          //console.log(newGameNode.grid.cells[3][3].value);
+                      //newGameNode.maxValue = newMaxTile.value;
+                }*/
+                childNodes.push(newGameNode);
+
 
             }
         }
         return childNodes;
     };
 
+
+
 //insert 2 having 90% probability or 4 having 10% probability
     function getMinParentChildNodes(parentNode) {
         var childNodes = [];
-        //console.log("min");
-        var freeCells = parentNode.grid.availableCells();
+      //  console.log("min");
+        var freeCells = _.cloneDeep(parentNode.grid.availableCells());
         //console.log(freeCells);
         for (var i = 0; i < freeCells.length; i++) {
             //for value 2 tile
@@ -193,7 +237,7 @@ var PlayerAI = function () {
     function alphaBetaPruning(gameNode, mode) {
         //base case
         if (gameNode.depth == 5) {
-            var heuristicVal = getHeuristicValue(gameNode.grid);
+            var heuristicVal = getHeuristicValue(gameNode.grid) + gameNode.bonusValue;
             //console.log(gameNode.direction);
             //console.log("child Node");
             //console.log(gameNode.grid.cells);
@@ -209,6 +253,26 @@ var PlayerAI = function () {
             //console.log("Beta value" + gameNode.betaValue);
             return gameNode.value;
         }
+        else if(gameNode.mode == 'min'){
+          if(gameNode.grid.isWin()){
+            gameNode.setNodeValue(10000);
+            gameNode.setBetaValue(10000);
+            return gameNode.value;
+          }
+          else if(gameNode.bestMove || gameNode.badMove){
+            console.log("terminal Node");
+            var heuristicVal = getHeuristicValue(gameNode.grid) + gameNode.bonusValue;
+            gameNode.setNodeValue(heuristicVal);
+            gameNode.setBetaValue(heuristicVal);
+            return gameNode.value;
+          }
+          /*else if(gameNode.badMove){
+            gameNode.setBetaValue(gameNode.value);
+            //return gameNode.value;
+          }*/
+
+        }
+
         //recursive case
         if (mode == 'max') {
             //console.log("Parent node: Max");
@@ -216,7 +280,7 @@ var PlayerAI = function () {
             //console.log("Node value:" + gameNode.value);
             //console.log("Alpha value" + gameNode.alphaValue);
             //console.log(s"Beta value" + gameNode.betaValue);
-            var maxChildNodes = getChildNodes(gameNode, mode);
+            var maxChildNodes = getChildNodes(_.cloneDeep(gameNode), mode);
             //console.log("Max nodes extracting");
             if (maxChildNodes != null && maxChildNodes.length > 0) {
                 for (var i = 0; i < maxChildNodes.length; i++) {
@@ -243,7 +307,7 @@ var PlayerAI = function () {
           //console.log("Node value:" + gameNode.value);
           //console.log("Alpha value" + gameNode.alphaValue);
           //console.log("Beta value" + gameNode.betaValue);
-            var minChildNodes = getChildNodes(gameNode, mode);
+            var minChildNodes = getChildNodes(_.cloneDeep(gameNode), mode);
             if (minChildNodes != null && minChildNodes.length > 0) {
                 for(var i = 0; i < minChildNodes.length; i++) {
                     var childNode = minChildNodes[i];
@@ -252,6 +316,12 @@ var PlayerAI = function () {
                     var val = alphaBetaPruning(childNode, 'max');
                     gameNode.setNodeValue(val);
                     gameNode.setBetaValue(val);
+                    /*if(gameNode.value == -32787){
+                      console.log("jjj");
+                      console.log("depth: " + childNode.depth);
+                      console.log(childNode.grid.showCells());
+                      console.log(childNode.alphaValue);
+                    }*/
                     //console.log("Parent node");
                     //console.log("Node value:" + gameNode.value);
                     //console.log("Alpha value" + gameNode.alphaValue);

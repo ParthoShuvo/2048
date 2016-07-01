@@ -5,10 +5,13 @@ var GameNode = function (depth, grid, mode, direction) {
     this.depth = depth;
     this.grid = grid;
     this.mode = mode;
-    this.alphaValue = -32717;
-    this.betaValue = 32787;
+    this.alphaValue = Number.MIN_VALUE;
+    this.betaValue = Number.MAX_VALUE;
     this.value = this.mode == 'max' ? this.alphaValue : this.betaValue;
     this.direction = direction;
+    this.badMove = false;
+    this.bestMove = false;
+    this.bonusValue = 0;
 
 
 
@@ -26,6 +29,8 @@ var GameNode = function (depth, grid, mode, direction) {
         }
     };
 
-  
+
+
+
 
 };

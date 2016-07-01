@@ -179,4 +179,30 @@ var GridCellShifter = function(){
       clearCurrentChangeMatrix();
       return {moved: moved, score: score, won: won};
   };
+
+  this.isMovedPossible = function(cells){
+      var moved = false;
+      for(var i = 0; i < 3; i++){
+        var cloneCell = _.cloneDeep(cells);
+        var res = null;
+        switch (i) {
+          case 0:
+            res = moveLeft(cloneCell);
+            break;
+          case 1:
+            res = movedDown(cloneCell);
+            break;
+          case 2:
+            res = movedRight(cloneCell);
+            break;
+          default:
+            break;
+        }
+        if(res != null && res.moved){
+          moved = true;
+          break;
+        }
+      }
+      return moved;
+  }
 }

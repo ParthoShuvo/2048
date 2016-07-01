@@ -7,7 +7,7 @@ var GridScorer = function (cells) {
         var maxTile = {value: 0, x: null, y: null};
         for (var row = 0; row < this.size; row++) {
             for (var col = 0; col < this.size; col++) {
-                if (this.cells[row][col] != null && this.cells[row][col].value > maxTile.value) {
+                if (this.cells[row][col] != null && this.cells[row][col].value >= maxTile.value) {
                     maxTile = {value: this.cells[row][col].value, x: row, y: col};
                 }
             }
@@ -84,12 +84,15 @@ var GridScorer = function (cells) {
       //right to left decreasing order
       for(var row = this.size-1; row >= 0; row--){
         var current = this.cells[row][this.size-1] != null ? this.cells[row][this.size-1].value : 0;
+        var sum = 0;
         for(var col = this.size-2;  col >= 0; col--){
             var next = this.cells[row][col] != null ? this.cells[row][col].value : 0;
             if(!(current >= next)){
-              degreeOfMonotonicity--;
+              sum--;
             }
         }
+        sum *= row+1;
+        degreeOfMonotonicity = sum;
       }
 
       //down to up decreasing order

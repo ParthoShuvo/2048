@@ -11,6 +11,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
     this.inputManager.on("restart", this.restart.bind(this));
     this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
     this.setup();
+    this.count = 0;
 }
 
 // Restart the game
@@ -63,6 +64,7 @@ GameManager.prototype.setup = function () {
 
 GameManager.prototype.startAITurn = function () {
     //console.log(this.playerAI);
+    //if(this.count <= 20){
     console.log("Before");
     console.log(this.grid.showCells());
     //this.sleep(2000);
@@ -73,8 +75,11 @@ GameManager.prototype.startAITurn = function () {
     var direction = playerAI.getAIPlayerDirection();
     console.log(direction);
     if(direction != null){
+      //this.count++;
         this.move(direction);
     }
+
+//  }
 };
 
 // Set up the initial tiles to start the game with
