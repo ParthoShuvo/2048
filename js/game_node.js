@@ -1,18 +1,18 @@
 /**
  * Created by shuvojit on 6/26/16.
  */
-var GameNode = function (depth, grid, mode, direction) {
+var GameNode = function (depth, grid, mode, direction, score) {
     this.depth = depth;
     this.grid = grid;
     this.mode = mode;
-    this.alphaValue = Number.MIN_VALUE;
-    this.betaValue = Number.MAX_VALUE;
+    this.alphaValue = -100000;
+    this.betaValue = 100000;
     this.value = this.mode == 'max' ? this.alphaValue : this.betaValue;
     this.direction = direction;
     this.badMove = false;
     this.bestMove = false;
     this.bonusValue = 0;
-
+    this.score = score;
 
 
     this.setAlphaValue =  function(value){
@@ -28,6 +28,8 @@ var GameNode = function (depth, grid, mode, direction) {
             this.value = value;
         }
     };
+
+
 
 
 

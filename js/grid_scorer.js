@@ -108,5 +108,69 @@ var GridScorer = function (cells) {
       return degreeOfMonotonicity;
     }
 
+    this.getClusterScore = function(){
+      var score = 0;
+      var neighbours = [-1, 0, 1];
+      for(var i=0; i<this.size; i++){
+          for(var j=0; j<this.size; j++){
+            if(this.cells[i][j] == null){
+              continue;
+            }
+            var numOfNeighBours = 0;
+            var sum = 0;
+            for(var k=0; k<neighbours.length; k++){
+                var x = i+k;
+                if(x < 0 || x >= this.size){
+                  continue;
+                }
+                for(var l=0; l<neighbours.length; l++){
+                  var y = j+l;
+                  if(y < 0 || y >= this.size){
+                    continue;
+                  }
+                  if(this.cells[x][y] != null){
+                    sum += Math.abs(this.cells[i][j].value - this.cells[x][y].value);
+                    numOfNeighBours++;
+                  }
+                }
+            }
+            score = sum/numOfNeighBours;
+          }
+      }
+      return score;
+    };
+
+    this.getSmoothness2 = function () {
+        var score = 0;
+        var neighbours = [-1, 0, 1];
+        for(var i=0; i<this.size; i++){
+            for(var j=0; j<this.size; j++){
+                if(this.cells[i][j] == null){
+                    continue;
+                }
+                //var numOfNeighBours = 0;
+                var sum = 0;
+                for(var k=0; k<neighbours.length; k++){
+                    var x = i+k;
+                    if(x < 0 || x >= this.size){
+                        continue;
+                    }
+                    for(var l=0; l<neighbours.length; l++){
+                        var y = j+l;
+                        if(y < 0 || y >= this.size){
+                            continue;
+                        }
+                        if(this.cells[x][y] != null){
+                            sum += Math.abs(Math.log(this.cells[i][j].value)/Math.log(2) -
+                                Math.log(this.cells[x][y].value)/Math.log(2));
+                            //numOfNeighBours++;
+                        }
+                    }
+                }
+                score -= sum;
+            }
+        }
+        return score;
+    };
 
 };

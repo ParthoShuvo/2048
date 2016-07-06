@@ -3,15 +3,14 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
     this.inputManager = new InputManager;
     this.storageManager = new StorageManager;
     this.actuator = new Actuator;
-    cellShifter = new GridCellShifter();
 
     this.startTiles = 2;
-
-    this.inputManager.on("move", this.move.bind(this));
+    var thisGameManager = this;
+    /*this.inputManager.on("move", this.move.bind(this));*/
     this.inputManager.on("restart", this.restart.bind(this));
     this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
+    this.inputManager.on("startAI", this.startAI.bind(this));
     this.setup();
-    this.count = 0;
 }
 
 // Restart the game
@@ -19,6 +18,10 @@ GameManager.prototype.restart = function () {
     this.storageManager.clearGameState();
     this.actuator.continueGame(); // Clear the game won/lost message
     this.setup();
+};
+
+GameManager.prototype.startAI = function () {
+    this.startAITurn();
 };
 
 // Keep playing after winning (allows going over 2048)
@@ -58,33 +61,27 @@ GameManager.prototype.setup = function () {
     this.actuate();
 
     //console.log(this.grid.cells);
-    this.startAITurn();
+    //this.startAITurn();
 };
 
 
 GameManager.prototype.startAITurn = function () {
-    //console.log(this.playerAI);
-    //if(this.count <= 20){
     console.log("Before");
     console.log(this.grid.showCells());
-    //this.sleep(2000);
     var playerAI = new PlayerAI();
     playerAI.setStartingDepth(0);
     playerAI.setEndingDepth(0);
-    playerAI.setCurrentGrid(_.cloneDeep(this.grid));
+    playerAI.setCurrentGrid(_.cloneDeep(this.grid), this.score);
     var direction = playerAI.getAIPlayerDirection();
-    console.log(direction);
+    //console.log(direction);
     if(direction != null){
-      //this.count++;
         this.move(direction);
     }
 
-//  }
 };
 
 // Set up the initial tiles to start the game with
 GameManager.prototype.addStartTiles = function () {
-    console.log("Before Game start");
     this.grid.showCells();
     for (var i = 0; i < this.startTiles; i++) {
         this.addRandomTile();
@@ -97,8 +94,6 @@ GameManager.prototype.addRandomTile = function () {
         var value = Math.random() < 0.9 ? 2 : 4;
         var tile = new Tile(this.grid.randomAvailableCell(), value);
         this.grid.insertTile(tile);
-        //console.log("Random Number: " + value + ", at " + tile.x + "," + tile.y);
-        //console.log(this.grid.cells);
     }
 };
 
@@ -215,16 +210,11 @@ GameManager.prototype.move = function (direction) {
             this.over = true; // Game over!
         }
         this.actuate();
-        /*console.log("After move");
-        console.log(this.grid.showCells())*/
-        //this.sleep(5000);
-        this.setup();
+        setTimeout(function () {
+            self.startAITurn();
+        }, 800);
+        //this.startAITurn();
     }
-    /*console.log("After move");
-    console.log(this.grid.showCells());
-    this.sleep(1000);
-    console.log("after sleep");
-    this.startAITurn();*/
 };
 
 // Get the vector representing the chosen direction
@@ -308,11 +298,11 @@ GameManager.prototype.positionsEqual = function (first, second) {
     return first.x === second.x && first.y === second.y;
 };
 
-GameManager.prototype.sleep = function(milliseconds){
+/*GameManager.prototype.sleep = function(milliseconds){
   var start = new Date().getTime();
   for (var i = 0; i < 1e7; i++) {
     if ((new Date().getTime() - start) > milliseconds){
       break;
     }
   }
-};
+};*/
