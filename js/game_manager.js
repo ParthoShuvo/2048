@@ -5,7 +5,6 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
     this.actuator = new Actuator;
 
     this.startTiles = 2;
-    var thisGameManager = this;
     /*this.inputManager.on("move", this.move.bind(this));*/
     this.inputManager.on("restart", this.restart.bind(this));
     this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));

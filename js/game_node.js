@@ -10,8 +10,8 @@ var GameNode = function (depth, grid, mode, direction, score) {
     this.value = this.mode == 'max' ? this.alphaValue : this.betaValue;
     this.direction = direction;
     this.badMove = false;
-    this.bestMove = false;
-    this.bonusValue = 0;
+    /*this.bestMove = false;
+    this.bonusValue = 0;*/
     this.score = score;
 
 
